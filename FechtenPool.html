@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fencing poolround made with HTML</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+   
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <style>
+  .gleichstand {
+  background-color: yellow;
+}
+.vertikalMitte {
+  display: flex;
+  align-items: center;
+    justify-content: center; /* Zentriert den Inhalt horizontal */
+  height: 100%; /* Die Höhe der Zelle */
+}
+.table td {
+	vertical-align: middle;
+	horizontal-align: middle;
+}
+
+.btn:disabled {
+  opacity: 0.2; /* Reduziert die Deckkraft des Buttons */
+  cursor: not-allowed; /* Ändert den Mauszeiger beim Überfahren des Buttons */
+}
+
+    #dropzone {
+      border: 2px dashed #ccc;
+      padding: 20px;
+      text-align: center;
+      font-size: 18px;
+    }
+    #uploadButton {
+      border: 2px solid #ccc;
+      padding: 20px;
+      text-align: center;
+      font-size: 18px;
+    }
+
+  </style>
+   <script>
+   var idVonButton = "";
+   var pageWurdeReload = 0;
+   
+   function FelderFuellen() {
+   var AnzahlFechter = $('#tabelleFechter tr').length; //Anzahl der Zeilen, ohne die Titelzeile!
+   
+   $('#tabelleFechter tr').each(function() {
+		
+	AnzahlFechter = parseInt(AnzahlFechter);
+
+	$(this).find('td:nth-child(n+4):nth-child(-n+'+(AnzahlFechter+3)+')').each(function() {
+
+		console.log(this.children);
+		
+		if (this.children.length > 0) {
+			console.log($(this).children().attr('id'));
+		}
+	
+	});
+
+	$(this).find('td:nth-child(n)').each(function() {
+		if(AnzahlFechter > 1){
+			for (var i = 1; i <= AnzahlFechter; i++) {
+				
+			}
+		}
+	});
+	 
+	});
+   
+   }//Felder Füllen ENDE
+   
+   function NamenSchnellauswahlHinzufuegen(NameFechter){
+   
+    var FechterNamenVorauswahlArray = JSON.parse(localStorage.getItem("VorauswahlNamen"));
+	if (FechterNamenVorauswahlArray) {
+	  // Das Array existiert bereits im localStorage
+	  // Überprüfen, ob der NameFechter bereits im Array vorhanden ist
+	  if (FechterNamenVorauswahlArray.indexOf(NameFechter) === -1) {
+		FechterNamenVorauswahlArray.push(NameFechter); // NameFechter zum Array hinzufügen
+		localStorage.setItem("VorauswahlNamen", JSON.stringify(FechterNamenVorauswahlArray)); // Aktualisiertes Array im localStorage speichern
+	  }
+	  console.log("test Namen hinzu:"+JSON.stringify(FechterNamenVorauswahlArray));
+	} else {
+	  // Das Array existiert noch nicht im localStorage, ein leeres Array erstellen
+	  FechterNamenVorauswahlArray = [];
+	  localStorage.setItem("VorauswahlNamen", JSON.stringify(FechterNamenVorauswahlArray)); // Array im localStorage speichern
+
+	}
+	  
+
+	
+   
+   }
+   
+   function SuggestFunction(){
+   $('.fencerName').off();
+   // Suggestbox initialisieren
+  $(".fencerName").autocomplete({
+    source: vorauswahlNamen,
+    minLength: 1 // Mindestanzahl an Zeichen, bevor die Vorschläge angezeigt werden
+  });
+   }
+//////////////////////////////////////////////////////////////
+////
+   
+$(document).ready(function() {
+
+
+
+//////////////////////////////////////////////////////////////
+// Eventhandler für Veranstaltungsname
+
+$('#veranstaltungsName').on('change', function() {
+  var inputValue = $(this).val();
+  //console.log('Neuer Wert: ' + inputValue);
+  localStorage.setItem($(this).attr('id'), inputValue);
+});
+
+//////////////////////////////////////////////////////////////
+// Eventhandler für den 
+  $('#GefechteLoeschen').click(function() {
+	AlleGefechteLoeschen();
+  });
+
+
+
+//////////////////////////////////////////////////////////////
+function TabelleSpeichern() {
+
+
+  // Daten die benötigt werden:
+  var anzahlFechter = localStorage.getItem("AnzahlFechter"); 
+  var veranstaltungsName = localStorage.getItem("veranstaltungsName");
+  var AnzahlTrefferProGefecht = localStorage.getItem("AnzahlTrefferProGefecht");
+  // Datenstruktur für die JSON-Datei
+  var data = {
+    "VorauswahlNamen": [],
+    "anzahlFechter": anzahlFechter,
+    "veranstaltungsName": veranstaltungsName,
+    "ergebnisse": [],
+	"nameFechter":[]
+  };
+  
+  // Schleife zur Erstellung der Ergebnis-Arrays
+  
+  for (var i = 0; i < (anzahlFechter); i++) {
+    var ergebnisArray = [];
+	var nameFechterArray = [];
+	nameFechterArray.push($('#fencerName'+(i+1)).val());
+    for (var j = 0; j < (anzahlFechter); j++) {
+	//localStorage.getItem('fencer' + (i + 1) + 'gegen' + (f + 1));
+	var localstorageitem = localStorage.getItem('fencer' + (i + 1) + 'gegen' + (j + 1));
+		if (localstorageitem !== null) {
+			ergebnisArray.push(localstorageitem);
+		}else{
+			ergebnisArray.push("+");
+		}
+	}	
+    data.ergebnisse.push(ergebnisArray);
+	data.nameFechter.push(nameFechterArray);
+	data.VorauswahlNamen.push(localStorage.getItem("VorauswahlNamen"));
+  
+	
+  }
+  
+  // JSON-Datei speichern
+  var jsonString = JSON.stringify(data);
+  var blob = new Blob([jsonString], { type: "application/json" });
+  var url = URL.createObjectURL(blob);
+  
+  // Erzeuge einen temporären Link und löse den Download aus
+  var link = document.createElement("a");
+  link.href = url;
+  link.download = "ergebnisse.json";
+
+  // Link in das HTML-Dokument einfügen
+  link.click();
+  // Entferne den Link aus dem DOM
+  link.remove();
+}
+
+// Button-Klickereignis
+$("#SpeichernButton").click(function() {
+  TabelleSpeichern();
+});
+
+//////////////////////////////////////////////////////////////
+
+  var dropzone = document.getElementById('dropzone');
+  
+  // Event Listener für Drag & Drop
+  dropzone.addEventListener('dragover', handleDragOver, false);
+  dropzone.addEventListener('drop', handleFileSelect, false);
+  
+  function handleDragOver(event) {
+    event.stopPropagation();
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'copy';
+  }
+  
+  function handleFileSelect(event) {
+    event.stopPropagation();
+    event.preventDefault();
+  //console.log(event);
+    //var files = event.dataTransfer.files; // Array mit den ausgewählten Dateien
+  var files;
+
+  if (event.dataTransfer && event.dataTransfer.files) {
+    // Datei per Drag & Drop hochgeladen
+    files = event.dataTransfer.files;
+  } else if (event.target && event.target.files) {
+    // Datei per Upload-Button hochgeladen
+    files = event.target.files;
+  }
+    if (files && files.length > 0) {
+      var file = files[0]; // Wir nehmen an, dass nur eine Datei ausgewählt wurde
+  
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var jsonContent = e.target.result;
+        var data = JSON.parse(jsonContent);
+  
+		//Alles Löschen
+		AlleGefechteLoeschen();
+		localStorage.removeItem("AnzahlFechter");
+		var elements = document.querySelectorAll('th.text-center.spalteFechterNummer');
+		for (var i = 0; i < elements.length; i++) {
+		  elements[i].parentNode.removeChild(elements[i]);
+		}
+		
+		 $('#TabellePool tbody').empty();
+		 
+		//AnzahlFechter auslesen
+		//localStorage.setItem("AnzahlFechter", parseInt(data.anzahlFechter));
+
+        // JSON erfolgreich geladen
+		
+		// JSON Ergebniss Array auslesen:
+		$.each(data.ergebnisse, function(index, array) {
+		  
+		  $.each(array, function(innerIndex, value) {
+			if((index +1) !== (innerIndex+1)){
+			localStorage.setItem('fencer' + (index +1) + 'gegen' + (innerIndex+1), value);
+			
+			}
+		  });
+		}); // END JSON Array ausgelesen
+		$.each(data.nameFechter, function(index, array) {
+			$.each(array, function(innerIndex, value) {
+				localStorage.setItem('fencerName' + (index +1) , value);
+			});
+		}); // END JSON Array ausgelesen
+		
+		  for (var i = 0; i < parseInt(data.anzahlFechter); i++) {
+			// Auslösen des Klick-Ereignisses des addRowBtn
+			
+		  $('#addRowBtn').trigger('click');
+		  AddEventhanderZuFencerName();
+		  }
+		
+		//Jetzt die Ergebnisse aus dem Localstorage in die Button laden
+		AlleGefechteEintragen();
+		AlleNamenEintragen();
+		LinieCSSanpassen(data.anzahlFechter);
+		
+      };
+  
+      reader.readAsText(file);
+    }
+  }
+
+// Event Listener für Dateiupload
+uploadButton.addEventListener('change', handleFileSelect, false);
+//////////////////////////////////////////////////////////////////////
+
+  // Eventhandler für den Hinzufügen-Button
+  $('#addRowBtn').click(function() {
+	$('.zumAusblenden').show();
+	
+	
+	//Prüfen ob schon in der local storage was gespeichert ist:
+	//console.log(pageWurdeReload);
+	if (pageWurdeReload === 0){
+	
+	var AnzahlFechter = localStorage.getItem("AnzahlFechter");
+	  if (AnzahlFechter !== null) {// Das Element existiert im localStorage
+	  AnzahlFechter = parseInt(AnzahlFechter) + 1;
+	  localStorage.setItem("AnzahlFechter", AnzahlFechter);
+	} else {
+	  // Das Element existiert nicht im localStorage
+	 // console.log("Das Element 'AnzahlFechter' existiert nicht im localStorage.");
+	  localStorage.setItem("AnzahlFechter", 1);
+	}
+
+	}
+	
+    var newRow = $('<tr class="text-center"></tr>');
+    //var numColumns = 14; // Anzahl der Spalten
+	var numColumns = $('thead tr th').length; // Anzahl der Spalten
+	var rowCount = $('#tabelleFechter tr').length; //Anzahl der Zeilen, ohne die Titelzeile!
+	
+	rowCount = rowCount + 1; //Zählung fängt bei 0 an, aber für JQuery gibt es kein 0 Element.
+		
+	$('thead tr').each(function() {
+		var newCol = rowCount + 2; //1=Nr. 2=Name 3=Platzhalter
+	  $(this).find('th:nth-child('+newCol+')').after('<th class="text-center spalteFechterNummer">'+rowCount+'</th>');
+	});
+	
+	$('#tabelleFechter tr').each(function() {
+		var newCol = rowCount + 2;
+		//console.log($(this));
+		var fencerindex = $(this).index() + 1 ;
+	 // $(this).find('td:nth-child('+newCol+')').after('<td><input type="text" class="form-control" id="fencer'+fencerindex+'gegen'+rowCount+'" value="'+rowCount+'"></td>');
+	  $(this).find('td:nth-child('+newCol+')').after('<td><button id="fencer'+fencerindex+'gegen'+rowCount+'" class="btn btn-primary gefecht">+</button></td>');
+	});
+	
+    for (var i = 0; i <= numColumns; i++) {
+      //var cell = $('<td><input type="text" class="form-control"></td>');
+	  var cell = $('<td class="text-center">X</td>');
+	  switch (i) {
+      case 0 :
+        cell = $('<td class="table-condensed" style="max-width:5px;"><div id="fencerID'+rowCount+'" class="vertikalMitte">'+rowCount+'</div></td>'); 
+         break;
+      case 1 :
+        cell = $('<td style="min-width:100px;" class=""><input type="text" style="padding:0;" class="form-control fencerName" id="fencerName'+rowCount+'" value=""></td>'); // Name des Fechters
+         break;
+	  case 2 :
+          cell = $('<td>' + rowCount + '</td>'); // Zahl des Fechters
+         break;
+      default:
+        
+	}
+	  
+	//Jetzt werden alle Zellen zwischen FencerNumber und Siege abgearbeitet, da dies nach der Anzahl
+	//variiert muss hier mit JQuery gearbeitet werden.
+	
+	if (i > 2 && i < (rowCount - 1 + 3)) {
+	var fencerindex = rowCount  ;
+	//cell = $('<td><input type="text" class="form-control" id="fencer'+fencerindex+'gegen'+(i-2)+'" value=""></td>'); 
+	cell = $('<td><button id="fencer'+fencerindex+'gegen'+(i-2)+'" class="btn btn-primary gefecht">+</button></td>');
+	}
+	
+	if (i === (rowCount - 1 + 4)) {
+	var fencerindex = rowCount  ;
+	//cell = $('<td class="zumAusblenden"><input type="text" class="form-control" id="siege'+fencerindex+'" value=""></td>'); 
+	cell = $('<td class="zumAusblenden"><div class="vertikalMitte" id="siege'+fencerindex+'"></div></td>'); 
+	} 
+		if (i === (rowCount - 1 + 5)) {
+	var fencerindex = rowCount  ;
+	//cell = $('<td class="zumAusblenden"><input type="text" class="form-control" id="gefechte'+fencerindex+'" value=""></td>'); 
+	cell = $('<td class="zumAusblenden"><div class="verikalMitte" id="gefechte'+fencerindex+'" ></div></td>'); 
+	
+	} 
+	 
+	if (i === (rowCount - 1 + 6)) {
+	var fencerindex = rowCount  ;
+	//cell = $('<td class="zumAusblenden"><input type="text" class="form-control" id="gemachteTreffer'+fencerindex+'" value=""></td>'); 
+	cell = $('<td class="zumAusblenden"><div class="vertikalMitte" id="gemachteTreffer'+fencerindex+'" ></div></td>'); 
+	
+	} 
+		if (i === (rowCount - 1 + 7)) {
+	var fencerindex = rowCount  ;
+	//cell = $('<td class="zumAusblenden"><input type="text" class="form-control" id="erhalteneTreffer'+fencerindex+'" value=""></td>');
+	cell = $('<td class="zumAusblenden"><div class="vertikalMitte" id="erhalteneTreffer'+fencerindex+'" ></div></td>');
+	} 
+	if (i === (rowCount - 1 + 8)) {
+	var fencerindex = rowCount  ;
+	//cell = $('<td class="zumAusblenden"><input type="text" class="form-control" id="quotientSiegeGefechte'+fencerindex+'" value=""></td>');
+	cell = $('<td class="zumAusblenden"><div class="vertikalMitte" id="quotientSiegeGefechte'+fencerindex+'" ></div></td>');
+	} 
+	if (i === (rowCount - 1 + 9)) { //gT-eT
+	var fencerindex = rowCount  ;
+	//cell = $('<td class="zumAusblenden"><input type="text" class="form-control" id="gT-eT'+fencerindex+'" value=""></td>');
+	cell = $('<td class="zumAusblenden"><div class="vertikalMitte" id="gT-eT'+fencerindex+'" ></div></td>');
+	
+	} 
+	if (i === (rowCount - 1 + 10)) { //Platzierung
+	var fencerindex = rowCount  ;
+	//cell = $('<td class="zumAusblenden"><input type="text" class="form-control" id="Platzierung'+fencerindex+'" value=""></td>'); // Name des Fechters
+	cell = $('<td class="zumAusblenden"><div class="vertikalMitte" id="Platzierung'+fencerindex+'" ></div></td>'); // Name des Fechters
+	} 
+
+
+      newRow.append(cell);
+    }
+	
+	
+    $('#tabelleFechter').append(newRow);
+	   
+
+	AddEventhandlerZuGefecht();	  
+	AddEventhanderZuFencerName();
+    
+	LinieCSSanpassen(AnzahlFechter);//Schwarze Linie neu setzen
+  
+  
+  }); //eventhandler addRowButton ende
+  
+
+
+  
+  
+    // Eventhandler für den Button zum Ausblenden und Einblenden der Spalten
+  $('#toggleColumnsBtn').click(function() {
+    var lastColumns = $('#tabelleFechter td:nth-last-child(-n+7)'); // Auswahl der letzten sieben Spalten in den Zeilen
+    
+    if (lastColumns.is(':visible')) {
+      lastColumns.hide(); // Spalten ausblenden, wenn sie sichtbar sind
+    } else {
+      lastColumns.show(); // Spalten einblenden, wenn sie ausgeblendet sind
+    }
+	
+
+	
+  });//eventhandler toggleColumnsBtn ende
+  
+  // Eventhandler für den Button zum Ausblenden und Einblenden der Tabelle
+  $('#toggleTableBtn').click(function() {
+    $('.zumAusblenden').toggle(); // Schaltet den Sichtbarkeitsstatus des tbody-Bereichs um (ausblenden/einblenden)
+  });
+  
+  // Eventhandler zum löschen der Liste
+  $('#reloadBtn').click(function() {
+  var userInput = prompt("Bitte gib den Wert '0000' ein:");
+
+	if (userInput === "0000") {
+	
+	 AlleGefechteLoeschen();
+	 
+	 $('.fencerName').each(function() {
+		idVonButton = $(this)[0].id;
+		localStorage.removeItem(idVonButton);
+	});
+	 
+	 localStorage.removeItem("AnzahlFechter");
+	 localStorage.removeItem("veranstaltungsName");
+	 //localStorage.clear();
+	 
+	 location.reload();
+	} else {
+	  alert("Falsche Eingabe!");
+	}
+  
+  
+
+	});//ENDE Löschen Liste 
+	
+// Eventhandler zum Ändern der Trefferanzahl pro Gefecht
+  $('#AnzahlTrefferBtn').click(function() {
+  var userInput = prompt("Beim ändern der Trefferanzahl werden alle Gefechte auf '+' gelöscht!", localStorage.getItem("AnzahlTrefferProGefecht"));
+
+//$("#AnzahlTrefferBadge").text(); 
+
+	var NurZahlenPruefen = new RegExp(/^[0-9]+$/);
+	
+	
+	if (NurZahlenPruefen.test(userInput) && userInput < 101) {
+		//true
+		
+		AlleGefechteLoeschen();
+		localStorage.setItem("AnzahlTrefferProGefecht", userInput);
+		location.reload();
+	} else {
+		alert("Nur Zahlen!");
+	}
+
+  
+
+	});//ENDE
+	
+	
+	
+// Hier kannst du weitere Aktionen ausführen, die nach dem Schließen des Modals erfolgen sollen	   
+$(document).on("modalClosed", function() {
+  
+// Schleife zur Erstellung der Ergebnis-Arrays
+  var AnzahlFechter = localStorage.getItem("AnzahlFechter");
+  var fechterArray = []; // Array zur Speicherung der Fechterdaten
+  for (var i = 0; i < AnzahlFechter; i++) {
+//  Die Wertung erfolgt nach folgender Reihenfolge:
+//1. Verhältnis (ProzentSiege) von Siegen und Gefechten,
+//2. Die Trefferdifferenz(DifGesetzteErhaltene) von gegebenen Treffern minus erhaltener Treffer.
+//3. Anzahl der gegebenen Treffer(GesetzteTreffer)
+	var AnzahlSiege = 0;
+	var AnzahlGefechte = 0;
+	var GesetzteTreffer = 0;
+	var ErhalteneTreffer = 0;
+	var ProzentSiege = 0;
+	var DifGesetzteErhaltene =0;
+	var Platzierung = 0;
+	
+    for (var j = 0; j < AnzahlFechter; j++) {
+
+	var localstorageitem = localStorage.getItem('fencer' + (i + 1) + 'gegen' + (j + 1));
+	var gegengefecht = localStorage.getItem('fencer' + (j + 1) + 'gegen' + (i + 1));
+		if (localstorageitem !== null && gegengefecht !== null) {
+			if(localstorageitem !== "+"){
+				AnzahlGefechte = AnzahlGefechte +1;
+			}
+			//Eigene Gefechte
+			if(localstorageitem === "V"){
+				AnzahlSiege = AnzahlSiege +1;
+				var AnzahlTreffer = localStorage.getItem("AnzahlTrefferProGefecht");	     
+				GesetzteTreffer = GesetzteTreffer + parseInt(AnzahlTreffer);
+			}
+			
+			var DfuerVerloren = new RegExp(/^[D]\d+$/);
+			if (DfuerVerloren.test(localstorageitem)) {
+			//true
+			//console.log(localstorageitem.slice(1));
+			GesetzteTreffer = GesetzteTreffer + parseInt(localstorageitem.slice(1));
+			}
+			
+			//gegnergefechte
+			if(gegengefecht === "V"){
+				//AnzahlSiege = AnzahlSiege +1;
+				var AnzahlTreffer = localStorage.getItem("AnzahlTrefferProGefecht");	     
+				ErhalteneTreffer = ErhalteneTreffer + parseInt(AnzahlTreffer);
+			}
+			
+			var DfuerVerloren = new RegExp(/^[D]\d+$/);
+			if (DfuerVerloren.test(gegengefecht)) {
+			//true
+			//console.log(gegengefecht.slice(1));
+			ErhalteneTreffer = ErhalteneTreffer + parseInt(gegengefecht.slice(1));
+			}
+
+		}
+	}	
+
+	$('#siege'+(i+1)).text(AnzahlSiege);
+	$('#gefechte'+(i+1)).text(AnzahlGefechte);
+	$('#gemachteTreffer'+(i+1)).text(GesetzteTreffer);
+	$('#erhalteneTreffer'+(i+1)).text(ErhalteneTreffer);
+	$('#quotientSiegeGefechte'+(i+1)).text((AnzahlSiege/AnzahlGefechte).toFixed(4));
+	$('#gT-eT'+(i+1)).text(GesetzteTreffer-ErhalteneTreffer);
+
+      // Platzierung und Fechterdaten speichern
+    var fechter = {
+		Nummer: i + 1, // Nummer des Fechters
+      Platzierung: 0,
+      quotientSiegeGefechte: (AnzahlSiege/AnzahlGefechte).toFixed(4),
+      gT_eT: GesetzteTreffer - ErhalteneTreffer,
+      GesetzteTreffer: GesetzteTreffer
+    };
+    fechterArray.push(fechter);
+	
+  }//ENDE For Schleife Fencer
+   
+
+  //Sieger ausrechnen
+  
+
+
+  
+  // Sortieren der Fechterdaten nach den Werten
+  fechterArray.sort(function(a, b) {
+    // Sortierung nach quotientSiegeGefechte absteigend
+  if (parseFloat(a.quotientSiegeGefechte) > parseFloat(b.quotientSiegeGefechte)) return -1;
+  if (parseFloat(a.quotientSiegeGefechte) < parseFloat(b.quotientSiegeGefechte)) return 1;
+
+    // Sortierung nach gT_eT absteigend
+    if (a.gT_eT > b.gT_eT) return -1;
+    if (a.gT_eT < b.gT_eT) return 1;
+    
+    // Sortierung nach GesetzteTreffer absteigend
+    if (a.GesetzteTreffer > b.GesetzteTreffer) return -1;
+    if (a.GesetzteTreffer < b.GesetzteTreffer) return 1;
+    
+	// Gleichstand markieren
+  if (a.quotientSiegeGefechte === b.quotientSiegeGefechte && a.gT_eT === b.gT_eT && a.GesetzteTreffer === b.GesetzteTreffer) {
+	a.Gleichstand = true;
+	b.Gleichstand = true;
+  }
+	
+    return 0;
+  });
+  
+    // Platzierung setzen
+  for (var i = 0; i < AnzahlFechter; i++) {
+    fechterArray[i].Platzierung = i + 1;
+    $('#Platzierung'+fechterArray[i].Nummer).text(fechterArray[i].Platzierung);
+	  if (fechterArray[i].Gleichstand) {
+		$('#Platzierung'+fechterArray[i].Nummer).addClass('gleichstand');
+	  } else {
+		$('#Platzierung'+fechterArray[i].Nummer).removeClass('gleichstand');
+		}
+  }
+
+  
+  
+  
+});
+
+  // Schließen des Modals beim Klick auf das Schließen-Symbol
+  $('.close').click(function() {
+    $('#myModal').hide(); // Versteckt das Modal
+	localStorage.setItem("ErgebnisLinkerFechter","");
+	localStorage.setItem("ErgebnisRechterFechter","");
+  });
+
+  // Schließen des Modals beim Klick auf den Hintergrund
+  $(window).click(function(event) {
+    if (event.target.id == 'myModal') {
+      $('#myModal').hide(); // Versteckt das Modal
+	  	localStorage.setItem("ErgebnisLinkerFechter","");
+		localStorage.setItem("ErgebnisRechterFechter","");
+    }
+  });
+
+  
+
+//Prüfen ob schon in der local storage was gespeichert ist:
+var AnzahlFechter = localStorage.getItem("AnzahlFechter");
+  if (AnzahlFechter !== null) {
+  // Das Element existiert im localStorage
+  
+
+  for (var i = 0; i < AnzahlFechter; i++) {
+    // Auslösen des Klick-Ereignisses des addRowBtn
+	pageWurdeReload = 1;
+  $('#addRowBtn').trigger('click');
+  AlleGefechteEintragen();
+  AlleNamenEintragen();
+  AddEventhanderZuFencerName();
+  }
+  LinieCSSanpassen(AnzahlFechter);
+  pageWurdeReload = 0;
+  
+} else {
+  // Das Element existiert nicht im localStorage
+  console.log("Das Element 'AnzahlFechter' existiert nicht im localStorage.");
+}
+
+$('.ergebnisRechts').on('click', function() {
+    // Alle Buttons auf den Ausgangszustand (rot) setzen
+    $('.ergebnisRechts').removeClass('btn-success').addClass('btn-danger');
+    
+    // Den ausgewählten Button grün färben
+    $(this).removeClass('btn-danger').addClass('btn-success');
+	
+	localStorage.setItem("ErgebnisRechterFechter", $(this).text());
+	
+	 pruefeErgebnis();
+  });
+$('.ergebnisLinks').on('click', function() {
+    // Alle Buttons auf den Ausgangszustand (rot) setzen
+    $('.ergebnisLinks').removeClass('btn-success').addClass('btn-danger');
+    
+    // Den ausgewählten Button grün färben
+    $(this).removeClass('btn-danger').addClass('btn-success');
+	
+	localStorage.setItem("ErgebnisLinkerFechter", $(this).text());
+	
+	 pruefeErgebnis();
+  });
+$('#ErgebnisEintragen').on('click', function() {
+  if (!$(this).is(':disabled')) {
+	
+	var FechterIDRechts = $('#FechterIDRechts').text(); // Text des Elements erhalten
+	var nummerRechts = FechterIDRechts.split(' ')[1]; // Extrahiere die Zahl nach "Nr."
+
+	var buttonTextRechts = $('.ergebnisRechts.btn-success').text();
+	var FechterIDLinks = $('#FechterIDLinks').text(); // Text des Elements erhalten
+	var nummerLinks = FechterIDLinks.split(' ')[1]; // Extrahiere die Zahl nach "Nr."
+	 
+	var buttonTextLinks = $('.ergebnisLinks.btn-success').text(); 
+    // Aktualisiert den entsprechenden Button mit der gewählten Zahl
+    $('#fencer' + nummerRechts+'gegen'+nummerLinks).text(buttonTextRechts);
+	$('#fencer' + nummerLinks+'gegen'+nummerRechts).text(buttonTextLinks);
+	
+	localStorage.setItem('fencer' + nummerRechts+'gegen'+nummerLinks, buttonTextRechts);
+	localStorage.setItem('fencer' + nummerLinks+'gegen'+nummerRechts, buttonTextLinks);
+	
+	$('#ErgebnisEintragen').prop('disabled', true);
+	$('#myModal').hide(); 
+	 $(document).trigger("modalClosed"); // Auslösen des modalClosed-Events
+  }
+});
+ 
+$('#FechterLoeschen').click(function() {
+	// Fechter löschen
+	$('#tabelleFechter tr:last').remove();
+
+	// Spalte löschen
+	var spalteNummer = $('#TabellePool th.spalteFechterNummer').length;
+	$('#TabellePool colgroup col:nth-child(' + (spalteNummer + 1) + ')').remove();
+	$('#TabellePool th.spalteFechterNummer:last').remove();
+
+	localStorage.removeItem('fencerName' + spalteNummer);
+
+	var buttons = document.querySelectorAll("button[id^='fencer'][id$='gegen"+(spalteNummer)+"']");
+	buttons.forEach(function(button) {
+		var tdElement = button.parentNode;
+		tdElement.parentNode.removeChild(tdElement);
+	});
+	// Ergebnisse im localStorage löschen
+	for (var i = 1; i <= spalteNummer; i++) {
+	  localStorage.removeItem('fencer' + i + 'gegen' + spalteNummer);
+	  localStorage.removeItem('fencer' + spalteNummer + 'gegen' + i);
+	}
+	// Wert AnzahlFechter um eins Verringern
+	var anzahlFechter = localStorage.getItem("AnzahlFechter");
+
+	// Überprüfen, ob der Wert im LocalStorage vorhanden ist
+	if (anzahlFechter) {
+	  // Den Wert um 1 reduzieren
+	  anzahlFechter = parseInt(anzahlFechter) - 1;
+
+	  // Den aktualisierten Wert im LocalStorage speichern
+	  localStorage.setItem("AnzahlFechter", anzahlFechter);
+	  LinieCSSanpassen(anzahlFechter);
+	}
+
+	$(document).trigger("modalClosed"); // Auslösen des modalClosed-Events
+});
+ 
+ 
+ 
+ 
+ 
+ 
+});//ENDE Document.ready
+
+
+function pruefeErgebnis() {
+  var ergebnisRechts = $('.ergebnisRechts.btn-success').text();
+  var ergebnisLinks = $('.ergebnisLinks.btn-success').text();
+
+	//mit Regex compare
+	var DfuerVerloren = new RegExp(/^[D]\d+$/);
+	var VfuerGewonnen = new RegExp(/^[V]$/);
+	
+	if (DfuerVerloren.test(ergebnisRechts)) {
+		//true
+	}
+
+ if ((DfuerVerloren.test(ergebnisRechts) && VfuerGewonnen.test(ergebnisLinks)) || (VfuerGewonnen.test(ergebnisRechts) && DfuerVerloren.test(ergebnisLinks))) { 
+    $('#ErgebnisEintragen').prop('disabled', false);
+  } else {
+    $('#ErgebnisEintragen').prop('disabled', true);
+  }
+}
+
+
+
+/////////////////////////////////////////////////////
+// Jetzt noch die Linie anpassen
+function LinieCSSanpassen(AnzahlFechter){
+  // Colgroup-Element auswählen und Anzahl der Spalten aktualisieren
+  $(".table colgroup col#spalte").attr("span", (parseInt(AnzahlFechter) + 2));
+
+}
+
+
+///////////////////////////////////////////////////////////////////
+// Mit dieser Function werden alle Buttons der Gefechte mit click belegt
+
+function AddEventhandlerZuGefecht(){
+	// Öffnen des Modals beim Klick auf den Button EVENTHANDLER
+	$('.gefecht').off();//Alle Listener entfernen
+	
+	  $('.gefecht').click(function() {
+
+		$('#myModal').show(); // Zeigt das Modal an
+
+		$('.ergebnisRechts').removeClass('btn-success').addClass('btn-danger');
+		$('.ergebnisLinks').removeClass('btn-success').addClass('btn-danger');
+		$('#ErgebnisEintragen').prop('disabled', true); //Eintragen button auf disabled stellen
+		 var buttonId = $(this).attr('id');
+		  var ids = buttonId.split('gegen');
+		  var fencerRechts = ids[0].replace('fencer', '');
+		  var fencerLinks = ids[1];
+		 $('#FechterIDRechts').text("Nr. "+fencerRechts); 
+		 $('#FechterIDLinks').text("Nr. "+fencerLinks); 
+		 
+		 $('#FechterNameRechts').text($('#fencerName'+fencerRechts).val());
+		 $('#FechterNameLinks').text($('#fencerName'+fencerLinks).val());
+		 
+		 //Prüfen ob schon Ergebnisse in der Tabelle sind:
+		 var localstorageitem = localStorage.getItem('fencer' + fencerRechts + 'gegen' + fencerLinks);
+		 var localstorageitemLinks = localStorage.getItem('fencer' + fencerLinks + 'gegen' + fencerRechts);
+		 
+		 
+		 
+		if (localstorageitem !== null && localstorageitem !== "+") {
+			$('.ergebnisRechts').each(function() {
+			  if ($(this).text() === localstorageitem) {
+				$(this).removeClass('btn-danger').addClass('btn-success');
+			  }
+			});
+			$('.ergebnisLinks').each(function() {
+			  if ($(this).text() === localstorageitemLinks) {
+				$(this).removeClass('btn-danger').addClass('btn-success');
+			  }
+			});
+			
+		}else{
+
+		
+		}
+		 
+
+		  
+
+
+	  });
+
+}
+
+
+
+
+  function AddEventhanderZuFencerName(){
+  $('.fencerName').off();
+
+	$('.fencerName').on('change', function() {
+	  var inputValue = $(this).val();
+	  //console.log('Neuer Wert: ' + inputValue);
+	  localStorage.setItem($(this).attr('id'), inputValue);
+
+	  NamenSchnellauswahlHinzufuegen(inputValue);
+	  
+
+	});
+	
+	$('.fencerName').on('focus', function() {
+	   var vorauswahlNamen = JSON.parse(localStorage.getItem("VorauswahlNamen")) || [];
+
+    $('.fencerName').autocomplete({
+	
+      source: vorauswahlNamen,
+      minLength: 1 // Mindestanzahl an Zeichen, bevor die Vorschläge angezeigt werden
+    });
+	
+	
+	
+	});
+
+
+	
+  }
+
+
+
+
+ 
+
+
+//alle im localStorage und die Beschriftung der Buttons fencerXgegenX
+function AlleGefechteLoeschen(){
+	//Alle Buttons von .gefecht durchlaufen:
+	$('.gefecht').each(function() {
+		idVonButton = $(this)[0].id;
+		localStorage.removeItem(idVonButton);
+		$('#'+idVonButton).text("+");
+
+	});
+}
+
+//alle im localStorage und die Inhalte der Felder nach Siege etc.
+function AlleErgebnisseLoeschen(){
+
+}
+
+
+// Alle ".gefecht" Buttons werden mit + oder dem Ergebnis aus der localstorage gefüllt
+function AlleGefechteEintragen(){
+
+	$('.gefecht').each(function() {
+		idVonButton = $(this)[0].id;
+		
+		var ErgebnisGefecht = localStorage.getItem(idVonButton);
+		if (ErgebnisGefecht !== null) {
+			$(this).text(ErgebnisGefecht);
+		
+		}
+		
+
+	});
+
+}
+
+function AlleNamenEintragen(){
+	$('.fencerName').each(function() {
+		idVonButton = $(this)[0].id;
+		
+		var ErgebnisGefecht = localStorage.getItem(idVonButton);
+		if (ErgebnisGefecht !== null) {
+			$(this).val(ErgebnisGefecht);
+		
+		}
+		
+
+	});
+
+}
+
+
+  </script>
+  
+</head>
+<body>
+  <div class="container">
+	<div class="row">
+		<table id="TabellePool" class="table table-sm" >
+		  <colgroup>
+			<col  id="spalte">
+			 <col style="border-right: 4px solid #000000;">
+		  </colgroup>
+		  <thead>
+			<tr>
+			  <th>Nr</th>
+			  <th>Name</th>
+			  <th></th>
+
+			  <th class="zumAusblenden text-center">S</th>
+			  <th class="zumAusblenden">G</th>
+			  <th class="zumAusblenden">gT</th>
+			  <th class="zumAusblenden">eT</th>
+			  <th class="zumAusblenden">%S</th>
+			  <th class="zumAusblenden">gT-eT</th>
+			  <th class="zumAusblenden">Platz</th>
+			</tr>
+		  </thead>
+		  <tbody id="tabelleFechter">
+			
+		  </tbody>
+		</table>
+	</div>
+	
+	<div class="row mt-3">
+	<input type="text" class="form-control" id="veranstaltungsName" value="Fencing Round 1">
+	</div>
+	
+	<div class="row mt-3">
+	
+	<button type="button"  id="SpeichernButton" class="btn btn-primary m-1">Speichern</button>
+	<button type="button" id="addRowBtn" class="btn btn-primary m-1">Hinzufügen</button>
+	<button type="button" id="toggleTableBtn" class="btn btn-warning m-1">Hide</button>
+	
+	</div>
+	
+<div class="row mt-5">
+
+	<button type="button" id="FechterLoeschen" class="btn btn-danger m-1">Fechter Löschen</button>
+	<button type="button" id="GefechteLoeschen" class="btn btn-danger m-1">Gefechte Löschen</button>
+	<button type="button" id="reloadBtn" class="btn btn-danger m-1">Liste Löschen</button>
+   <button type="button" id="AnzahlTrefferBtn" class="btn btn-danger m-1">Anzahl Treffer pro Gefecht: <span id="AnzahlTrefferBadge" class="badge bg-secondary">
+<script>
+var AnzahlTreffer = localStorage.getItem("AnzahlTrefferProGefecht");
+if (AnzahlTreffer === null){
+document.write("5");
+localStorage.setItem("AnzahlTrefferProGefecht", "5")
+} else {
+document.write(localStorage.getItem("AnzahlTrefferProGefecht"));
+}
+</script></span></button>
+</div>
+
+<div class="row mt-5">
+
+	<div id="dropzone" class="m-1">Ziehe hier die JSON-Datei hin</div>
+	<input type="file" id="uploadButton" accept=".json"class="m-1">
+	<div id="ergebnis"></div>
+</div>
+
+<div class="row mt-5">
+<div class="col-sm-5">
+
+</div>
+
+</div>
+
+
+
+</div>
+
+
+  
+  <!-- Das Modal -->
+  
+    <div id="myModal" class="modal" role="dialog">
+	  <div class="modal-dialog modal-xl modal-dialog-scrollable" >
+		<div class="modal-content">
+		  <div class="modal-header" style="padding:0.2rem;">
+			<h4 class="modal-title">Gefecht</h4>
+			<button type="button" class="close" data-dismiss="modal">&times;</button>
+		  </div>
+		  <div class="modal-body" style="padding:0;">
+			<table id="ergebnisTabelle" class="table-bordered">
+			  <tbody>
+				<tr>
+				  <td class="col-1" id="FechterIDRechts">Nr.</td>
+				  <td class="col-4" id="FechterNameRechts"></td>
+				  </tr>
+				  <tr >
+				  <td class="col-12" colspan="2">
+					<script>
+					var AnzahlTreffer = localStorage.getItem("AnzahlTrefferProGefecht");
+				    for (var i = 0; i < parseInt(AnzahlTreffer); i++) {
+						//echo "";
+					document.write('<button class="btn btn-danger ergebnisRechts">D'+i+'</button> ')
+					}
+					</script>
+				  
+					<button class="btn btn-danger ergebnisRechts">V</button>
+				  </td>
+				</tr>
+				<tr>
+				  <td class="col-1" id="FechterIDLinks">Nr.</td>
+				  <td class="col-4" id="FechterNameLinks"></td>
+				   </tr>
+				  <tr>
+				  <td class="col-4" colspan="2">
+				  <script>
+				  for (var i = 0; i < parseInt(AnzahlTreffer); i++) {
+						//echo "";
+					document.write('<button class="btn btn-danger ergebnisLinks">D'+i+'</button> ')
+					}
+					</script>
+					<button class="btn btn-danger ergebnisLinks">V</button>
+					
+				  </td>
+				</tr>
+			  </tbody>
+			</table>
+			<button id="ErgebnisEintragen" style="margin:1em;"class="btn btn-success" disabled>Eintragen</button>
+		  </div>
+		</div>
+	  </div>
+	</div>
+
+  
+</body>
+</html>
