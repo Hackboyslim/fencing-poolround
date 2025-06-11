@@ -1,5 +1,5 @@
 # fencing-poolround
-Responsive HTML based poolround tableau for fencers. It is written in one HTML file, so you can put it on your Mobile device. It just need a Internet Connection to load the library of Bootstrap, Jquery, Jquer-UI etc.
+Responsive HTML based poolround tableau for fencers. It is written in one HTML file, so you can put it on your Mobile device. It just need a Internet Connection to load the library of Bootstrap, Jquery, Jquery-UI etc.
 
 The code and interface of the program is mostly written with german comments and variable names.
 
