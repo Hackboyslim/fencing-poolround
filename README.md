@@ -12,7 +12,7 @@ The code and interface of the program is mostly written with german comments and
 Use this file on your mobile device or better: a big touch screen. The purpose of this file to save paper and have fun at the fencing-training. This fencing poolround is not designed for fencing tournaments.
 
 - Run on one device
-- Save the data into the local data storage of your browser
+- It save the data into the local data storage of your browser, on reloading: no data loss.
 - Save the data into a json file for transfering on another device
 
 
